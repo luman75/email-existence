@@ -1,7 +1,12 @@
 var dns = require('dns'),
 	net = require('net');
 
-module.exports = function (email, callback, timeout) {
+module.exports = function (email, options, callback, timeout) {
+    if (typeof options === 'function'){
+        callback = options;
+        options = {};
+    }
+
 	timeout = timeout || 5000;
 	if (!/^\S+@\S+$/.test(email)) {
 		callback(null, false);
@@ -12,6 +17,11 @@ module.exports = function (email, callback, timeout) {
 			callback(err, false);
 			return;
 		}
+        if (options.onlyMx === true){
+            callback(err, true);
+            return;
+        }
+
 		var conn = net.createConnection(25, addresses[0].exchange);
 		var commands = [ "helo " + addresses[0].exchange, "mail from: <"+email+">", "rcpt to: <"+email+">" ];
 		var i = 0;
